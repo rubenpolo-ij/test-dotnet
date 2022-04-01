@@ -1,0 +1,13 @@
+﻿@model int
+@{
+    ViewData["Title"] = "Candidate Not Found - 404";
+}
+
+<div class="alert alert-danger" role="alert">
+    <h4>Not found</h4>
+    <p>
+        Candidate with Id=@Model cannot be found.
+    </p>
+</div>
+<br />
+<a asp-action="Index" asp-controller="Candidate" class="btn btn-primary">Back to candidates list</a>

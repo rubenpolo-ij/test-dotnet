@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Test.Persistence.DB;
+using Test.Persistence.Repositories;
+using Test.Services;
 
 namespace Test.DotNet
 {
@@ -23,6 +27,14 @@ namespace Test.DotNet
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ICandidateService, CandidateService>();
+            services.AddScoped<ICandidateExperienceService, CandidateExperienceService>();
+            services.AddScoped<ICandidateRepository, CandidateRepository>();
+            services.AddScoped<ICandidateExperienceRepository, CandidateExperienceRepository>();
+
+            var connectionString = Configuration.GetConnectionString("DbConnection");
+            services.AddDbContext<Context>(options => options.UseSqlServer(connectionString));
+
             services.AddControllersWithViews();
         }
 
@@ -32,9 +44,16 @@ namespace Test.DotNet
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                var serviceScopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+                using (var serviceScope = serviceScopeFactory.CreateScope())
+                {
+                    var dbContext = serviceScope.ServiceProvider.GetService<Context>();
+                    dbContext.Database.EnsureCreated();
+                }
             }
             else
             {
+                app.UseStatusCodePagesWithRedirects("/Home/Error");
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
@@ -50,7 +69,7 @@ namespace Test.DotNet
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Candidate}/{action=Index}/{id?}");
             });
         }
     }

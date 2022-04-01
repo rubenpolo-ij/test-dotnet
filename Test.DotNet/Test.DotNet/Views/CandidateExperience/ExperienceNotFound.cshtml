@@ -1,0 +1,13 @@
+﻿@model List<int>
+@{
+    ViewData["Title"] = "Experience Not Found - 404";
+}
+
+<div class="alert alert-danger" role="alert">
+    <h4>Not found</h4>
+    <p>
+        Candidate experience with Id=@Model[1] cannot be found.
+    </p>
+</div>
+<br />
+<a asp-action="Edit" asp-controller="Candidate" asp-route-id="@Model[0]" class="btn btn-primary">Back to candidate experiences list</a>
